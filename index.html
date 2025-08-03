@@ -32,27 +32,28 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
         }
         .tool-container {
             background: var(--card-bg);
-            border-radius: 18px;
-            padding: 36px 32px 28px 32px;
+            border-radius: 14px;
+            padding: 22px 6vw 18px 6vw;
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            gap: 22px;
-            width: 100%;
-            max-width: 430px;
+            gap: 18px;
+            width: 98vw;
+            max-width: 420px;
             border: 1.5px solid var(--border-color);
             box-sizing: border-box;
+            margin-top: 6vw;
             z-index: 2;
         }
         h3 {
             margin: 0;
             color: #00ff41;
             font-weight: 700;
-            font-size: 1.7rem;
+            font-size: 1.3rem;
             text-align: center;
             letter-spacing: 0.5px;
             text-shadow: 0 0 8px #00ff41cc;
@@ -70,7 +71,7 @@
             padding: 14px 44px 14px 16px;
             border: 1.5px solid #00ff41;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             background: var(--input-bg);
             color: #00ff41;
             transition: border-color 0.3s, box-shadow 0.3s;
@@ -84,12 +85,17 @@
         }
         .input-group .fa-lock {
             color: #00ff41;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
         }
         .strength-indicator {
             height: 10px;
             border-radius: 5px;
-            margin-top: 18px;
-            margin-bottom: 6px;
+            margin-top: 14px;
+            margin-bottom: 4px;
             transition: width 0.3s, background-color 0.3s;
             background: #222;
             width: 100%;
@@ -114,20 +120,20 @@
         .strength-text {
             text-align: center;
             font-weight: 600;
-            margin-top: 14px;
-            font-size: 1.08rem;
+            margin-top: 10px;
+            font-size: 1rem;
             color: #00ff41;
-            min-height: 24px;
+            min-height: 22px;
             text-shadow: 0 0 6px #00ff41cc;
         }
         #crackTime {
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 1.2rem;
             font-weight: 900;
             color: #6366f1;
-            margin: 38px 0 0 0;
+            margin: 24px 0 0 0;
             letter-spacing: 1px;
-            min-height: 48px;
+            min-height: 32px;
             transition: color 0.3s;
             animation: pop 0.4s;
             z-index: 1;
@@ -137,35 +143,32 @@
             50% { transform: scale(1.13); }
             100% { transform: scale(1); }
         }
-        .crack-fast { color: #ef4444; }
-        .crack-medium { color: #f59e42; }
-        .crack-slow { color: #22c55e; }
-        .crack-very-slow { color: #2563eb; }
         /* Odometer Styles */
         .odometer-clock {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin: 38px 0 0 0;
-            min-height: 90px;
+            gap: 3px;
+            margin: 18px 0 0 0;
+            min-height: 40px;
+            flex-wrap: wrap;
         }
         .odometer-digit {
             background: #10181f;
             color: #00ff41;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 3.2rem;
-            width: 68px;
-            height: 90px;
-            border-radius: 6px;
+            font-size: 1.2rem;
+            width: 26px;
+            height: 40px;
+            border-radius: 4px;
             display: flex;
             align-items: flex-start;
             justify-content: center;
             box-shadow: 0 2px 8px #00ff4133, 0 1px 0 #00ff41 inset;
             position: relative;
             overflow: hidden;
-            margin: 0 2px;
-            border: 2px solid #00ff41;
+            margin: 0 1px;
+            border: 1.5px solid #00ff41;
             text-shadow: 0 0 8px #00ff41cc;
         }
         .odometer-inner {
@@ -175,21 +178,26 @@
             will-change: transform;
         }
         .odometer-digit span {
-            height: 90px;
-            line-height: 90px;
+            height: 40px;
+            line-height: 40px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3.2rem;
+            font-size: 1.2rem;
         }
         .odometer-label {
             color: #00ff41;
-            font-size: 2.2rem;
-            margin-left: 18px;
+            font-size: 1.1rem;
+            margin-left: 8px;
             align-self: flex-end;
             font-family: 'Courier New', Courier, monospace;
             font-weight: bold;
+            text-shadow: 0 0 8px #00ff41cc;
+        }
+        .hacker-message {
+            color: #00ff41 !important;
+            font-size: 1.1rem;
             text-shadow: 0 0 8px #00ff41cc;
         }
         @media (max-width: 500px) {
@@ -227,12 +235,6 @@
                 font-size: 1.2rem;
                 margin-left: 6px;
             }
-        }
-        /* For error/instantly messages */
-        .hacker-message {
-            color: #00ff41 !important;
-            font-size: 2rem;
-            text-shadow: 0 0 8px #00ff41cc;
         }
     </style>
 </head>
@@ -369,7 +371,7 @@
                     inner.appendChild(span);
                 }
                 setTimeout(() => {
-                    inner.style.transform = `translateY(-${parseInt(d) * 90}px)`;
+                    inner.style.transform = `translateY(-${parseInt(d) * 40}px)`;
                 }, 10);
                 digitDiv.appendChild(inner);
                 crackTime.appendChild(digitDiv);
