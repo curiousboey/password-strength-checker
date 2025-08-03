@@ -9,7 +9,7 @@ A hacker-themed password strength checker web app featuring:
 
 ## Demo
 
-![screenshot](screenshot.png)
+![screenshot](PASSWORD STRENGTH CHECKER.png)
 
 ## Features
 
