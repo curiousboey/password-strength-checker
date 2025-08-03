@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        :root {
+            --bg-gradient: linear-gradient(135deg, #10181f 0%, #1a232a 100%);
+            --card-bg: #181f23;
+            --text-color: #d1fae7;
+            --input-bg: #10181f;
+            --border-color: #2e3c43;
+            --weak: #ef4444;
+            --medium: #f59e42;
+            --strong: #22c55e;
+            --very-strong: #00ff41;
+            --shadow: 0 8px 32px rgba(0, 255, 65, 0.08);
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .tool-container {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 36px 32px 28px 32px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            width: 100%;
+            max-width: 430px;
+            border: 1.5px solid var(--border-color);
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        h3 {
+            margin: 0;
+            color: #00ff41;
+            font-weight: 700;
+            font-size: 1.7rem;
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 8px #00ff41cc;
+        }
+        .input-group {
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        #passwordInput {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 44px 14px 16px;
+            border: 1.5px solid #00ff41;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: #00ff41;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #passwordInput:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 0 3px #00ff4133;
+        }
+        .input-group .fa-lock {
+            color: #00ff41;
+        }
+        .strength-indicator {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 18px;
+            margin-bottom: 6px;
+            transition: width 0.3s, background-color 0.3s;
+            background: #222;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .strength-weak {
+            background-color: #ef4444;
+            width: 25%;
+        }
+        .strength-medium {
+            background-color: #f59e42;
+            width: 50%;
+        }
+        .strength-strong {
+            background-color: #22c55e;
+            width: 75%;
+        }
+        .strength-very-strong {
+            background-color: #00ff41;
+            width: 100%;
+        }
+        .strength-text {
+            text-align: center;
+            font-weight: 600;
+            margin-top: 14px;
+            font-size: 1.08rem;
+            color: #00ff41;
+            min-height: 24px;
+            text-shadow: 0 0 6px #00ff41cc;
+        }
+        #crackTime {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #6366f1;
+            margin: 38px 0 0 0;
+            letter-spacing: 1px;
+            min-height: 48px;
+            transition: color 0.3s;
+            animation: pop 0.4s;
+            z-index: 1;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.13); }
+            100% { transform: scale(1); }
+        }
+        .crack-fast { color: #ef4444; }
+        .crack-medium { color: #f59e42; }
+        .crack-slow { color: #22c55e; }
+        .crack-very-slow { color: #2563eb; }
+        /* Odometer Styles */
+        .odometer-clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 38px 0 0 0;
+            min-height: 90px;
+        }
+        .odometer-digit {
+            background: #10181f;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 3.2rem;
+            width: 68px;
+            height: 90px;
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            box-shadow: 0 2px 8px #00ff4133, 0 1px 0 #00ff41 inset;
+            position: relative;
+            overflow: hidden;
+            margin: 0 2px;
+            border: 2px solid #00ff41;
+            text-shadow: 0 0 8px #00ff41cc;
+        }
+        .odometer-inner {
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.5s cubic-bezier(.4,2,.6,1);
+            will-change: transform;
+        }
+        .odometer-digit span {
+            height: 90px;
+            line-height: 90px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.2rem;
+        }
+        .odometer-label {
+            color: #00ff41;
+            font-size: 2.2rem;
+            margin-left: 18px;
+            align-self: flex-end;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-shadow: 0 0 8px #00ff41cc;
+        }
+        @media (max-width: 500px) {
+            .tool-container {
+                max-width: 95vw;
+                padding: 20px 6vw 18px 6vw;
+            }
+            h3 {
+                font-size: 1.2rem;
+            }
+            #crackTime {
+                font-size: 1.3rem;
+                min-height: 32px;
+                margin-top: 18px;
+            }
+            .flip-clock {
+                gap: 4px;
+            }
+            .flip-digit {
+                font-size: 1.4rem;
+                width: 32px;
+                height: 40px;
+            }
+            .odometer-digit {
+                font-size: 1.4rem;
+                width: 32px;
+                height: 40px;
+            }
+            .odometer-digit span {
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.4rem;
+            }
+            .odometer-label {
+                font-size: 1.2rem;
+                margin-left: 6px;
+            }
+        }
+        /* For error/instantly messages */
+        .hacker-message {
+            color: #00ff41 !important;
+            font-size: 2rem;
+            text-shadow: 0 0 8px #00ff41cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="tool-container">
+        <h3>Password Strength Checker</h3>
+        <div class="input-group">
+            <input type="password" id="passwordInput" placeholder="Enter your password">
+            <i class="fa fa-lock"></i>
+        </div>
+        <div class="strength-indicator" id="strengthIndicator"></div>
+        <div class="strength-text" id="strengthText">Please enter a password.</div>
+    </div>
+    <div id="crackTime" class="odometer-clock"></div>
+
+    <script>
+        const passwordInput = document.getElementById('passwordInput');
+        const strengthIndicator = document.getElementById('strengthIndicator');
+        const strengthText = document.getElementById('strengthText');
+        const crackTime = document.getElementById('crackTime');
+
+        // Table from Hive Systems image (2023) for "Numbers, Upper and Lowercase Letters, Symbols"
+        // Columns: [Numbers Only, Lowercase, Upper+Lower, Numbers+Upper+Lower, Numbers+Upper+Lower+Symbols]
+        const crackTable = [
+            // len: 4-18
+            { len: 4,  data: ["Instantly","Instantly","Instantly","Instantly","Instantly"], class: "crack-fast" },
+            { len: 5,  data: ["Instantly","Instantly","Instantly","Instantly","Instantly"], class: "crack-fast" },
+            { len: 6,  data: ["Instantly","Instantly","Instantly","23 mins","48 mins"], class: "crack-fast" },
+            { len: 7,  data: ["Instantly","Instantly","7 hours","24 hours","2 days"], class: "crack-fast" },
+            { len: 8,  data: ["Instantly","1 hour","2 weeks","2 months","5 months"], class: "crack-fast" },
+            { len: 9,  data: ["Instantly","2 days","2 years","10 years","31 years"], class: "crack-medium" },
+            { len: 10, data: ["Instantly","1 month","112 years","651 years","2k years"], class: "crack-medium" },
+            { len: 11, data: ["41 mins","3 years","5k years","40k years","153k years"], class: "crack-slow" },
+            { len: 12, data: ["7 hours","74 years","303k years","2m years","10m years"], class: "crack-slow" },
+            { len: 13, data: ["3 days","1k years","15m years","155m years","751m years"], class: "crack-slow" },
+            { len: 14, data: ["4 weeks","50k years","819m years","9bn years","52bn years"], class: "crack-very-slow" },
+            { len: 15, data: ["9 months","1m years","42bn years","596bn years","3tn years"], class: "crack-very-slow" },
+            { len: 16, data: ["8 years","33m years","2tn years","36tn years","257tn years"], class: "crack-very-slow" },
+            { len: 17, data: ["78 years","879m years","115tn years","2qd years","18qd years"], class: "crack-very-slow" },
+            { len: 18, data: ["776 years","22bn years","5qd years","142qd years","1qn years"], class: "crack-very-slow" }
+        ];
+
+        // Detect character set type (returns 0-4 for the columns above)
+        function detectCharSet(password) {
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSymbol = /[^a-zA-Z0-9]/.test(password);
+
+            if (/^[0-9]+$/.test(password)) return 0; // Numbers Only
+            if (/^[a-z]+$/.test(password)) return 1; // Lowercase Only
+            if (hasLower && hasUpper && !hasNumber && !hasSymbol) return 2; // Upper+Lower
+            if (hasLower && hasUpper && hasNumber && !hasSymbol) return 3; // Numbers+Upper+Lower
+            if (hasLower && hasUpper && hasNumber && hasSymbol) return 4; // Numbers+Upper+Lower+Symbols
+            if ((hasLower || hasUpper) && hasNumber && hasSymbol) return 4; // Letters+Numbers+Symbols
+            if ((hasLower || hasUpper) && hasSymbol) return 4; // Letters+Symbols
+            if (hasNumber && hasSymbol) return 4; // Numbers+Symbols
+            if ((hasLower && hasUpper) && (hasNumber || hasSymbol)) return 4; // Upper+Lower+Other
+            if (hasLower && hasUpper) return 2; // Upper+Lower
+            if (hasLower) return 1; // Lowercase
+            if (hasUpper) return 2; // Uppercase treated as Upper+Lower
+            return 0; // fallback
+        }
+
+        // Get crack time from table
+        function getCrackTime(password) {
+            const len = password.length;
+            if (len === 0) return { time: "", class: "" };
+            if (len > 18) return { time: "Sorry! Password exceeds character limit(>18)", class: "crack-fast" };
+            const col = detectCharSet(password);
+            for (let i = crackTable.length - 1; i >= 0; i--) {
+                if (len >= crackTable[i].len) {
+                    return { time: crackTable[i].data[col], class: crackTable[i].class };
+                }
+            }
+            // If less than 4 chars
+            return { time: crackTable[0].data[col], class: crackTable[0].class };
+        }
+
+        // Convert time string to days if possible
+        function timeToDays(time) {
+            if (!time || time === "Instantly" || time.startsWith("Sorry!")) return time;
+            let num = parseFloat(time.replace(/[^0-9.]/g, ''));
+            if (isNaN(num)) return time;
+
+            if (time.includes("sec")) return (num / 86400).toFixed(2) + " days";
+            if (time.includes("min")) return (num / 1440).toFixed(2) + " days";
+            if (time.includes("hour")) return (num / 24).toFixed(2) + " days";
+            if (time.includes("day")) return num + " days";
+            if (time.includes("week")) return (num * 7) + " days";
+            if (time.includes("month")) return (num * 30) + " days";
+            if (time.includes("year")) {
+                if (time.includes("k")) num *= 1_000;
+                if (time.includes("m") && !time.includes("mn")) num *= 1_000_000; // for "m years" (million)
+                if (time.includes("mn")) num *= 1_000_000;
+                if (time.includes("bn")) num *= 1_000_000_000;
+                if (time.includes("tn")) num *= 1_000_000_000_000;
+                if (time.includes("qd")) num *= 1_000_000_000_000_000;
+                if (time.includes("qn")) num *= 1_000_000_000_000_000_000;
+                return (num * 365) + " days";
+            }
+            return time;
+        }
+
+        function renderOdometerClock(str) {
+            const crackTime = document.getElementById('crackTime');
+            crackTime.innerHTML = '';
+            if (!str) return;
+            // Show plain message for errors or "Instantly"
+            if (str.startsWith("Sorry!") || str === "Instantly") {
+                crackTime.innerHTML = `<span class="hacker-message">${str}</span>`;
+                return;
+            }
+            // Only extract numbers (and show "days" at the end)
+            let match = str.match(/([\d,]+)/g);
+            let label = str.includes('day') ? 'days' : '';
+            if (!match) {
+                crackTime.innerHTML = `<span style="color:#ef4444;font-size:2rem">${str}</span>`;
+                return;
+            }
+            let digits = match[0].replace(/,/g, '').split('');
+            // Pad to 21 digits, right-aligned
+            while (digits.length < 21) {
+                digits.unshift('0');
+            }
+            digits.forEach((d, i) => {
+                let digitDiv = document.createElement('div');
+                digitDiv.className = 'odometer-digit';
+                let inner = document.createElement('div');
+                inner.className = 'odometer-inner';
+                for (let n = 0; n < 10; n++) {
+                    let span = document.createElement('span');
+                    span.textContent = n;
+                    inner.appendChild(span);
+                }
+                setTimeout(() => {
+                    inner.style.transform = `translateY(-${parseInt(d) * 90}px)`;
+                }, 10);
+                digitDiv.appendChild(inner);
+                crackTime.appendChild(digitDiv);
+            });
+            if (label) {
+                let labelDiv = document.createElement('div');
+                labelDiv.className = 'odometer-label';
+                labelDiv.textContent = label;
+                crackTime.appendChild(labelDiv);
+            }
+        }
+
+        function renderInitialOdometer() {
+            const crackTime = document.getElementById('crackTime');
+            crackTime.innerHTML = '';
+            for (let i = 0; i < 21; i++) {
+                let digitDiv = document.createElement('div');
+                digitDiv.className = 'odometer-digit';
+                let inner = document.createElement('div');
+                inner.className = 'odometer-inner';
+                for (let n = 0; n < 10; n++) {
+                    let span = document.createElement('span');
+                    span.textContent = n;
+                    inner.appendChild(span);
+                }
+                // Set to 0
+                inner.style.transform = `translateY(0px)`;
+                digitDiv.appendChild(inner);
+                crackTime.appendChild(digitDiv);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', renderInitialOdometer);
+
+        // Animate number change for fun effect
+        let lastTime = "";
+        function animateCrackTime(newTime, cssClass) {
+            if (newTime === lastTime) return;
+            renderOdometerClock(newTime);
+            lastTime = newTime;
+        }
+
+        function updateStrength(password) {
+            const result = zxcvbn(password);
+            const score = result.score;
+            let text = '';
+            let indicatorClass = '';
+
+            switch (score) {
+                case 0:
+                    text = 'Very Weak';
+                    indicatorClass = 'strength-weak';
+                    break;
+                case 1:
+                    text = 'Weak';
+                    indicatorClass = 'strength-weak';
+                    break;
+                case 2:
+                    text = 'Medium';
+                    indicatorClass = 'strength-medium';
+                    break;
+                case 3:
+                    text = 'Strong';
+                    indicatorClass = 'strength-strong';
+                    break;
+                case 4:
+                    text = 'Very Strong';
+                    indicatorClass = 'strength-very-strong';
+                    break;
+                default:
+                    text = 'Please enter a password.';
+                    indicatorClass = '';
+                    break;
+            }
+
+            strengthText.textContent = text;
+            strengthIndicator.className = 'strength-indicator ' + indicatorClass;
+
+            if (password.length > 0 && result.feedback.suggestions.length > 0) {
+                const suggestion = result.feedback.suggestions[0];
+                strengthText.textContent += ` (${suggestion})`;
+            }
+
+            // Crack time update
+            const crack = getCrackTime(password);
+            let displayTime = crack.time;
+            if (
+                password.length > 0 &&
+                crack.time !== "Instantly" &&
+                !crack.time.startsWith("Sorry!") &&
+                !crack.time.includes("day")
+            ) {
+                displayTime = timeToDays(crack.time);
+            }
+            animateCrackTime(displayTime, crack.class);
+        }
+
+        passwordInput.addEventListener('input', (event) => {
+            const password = event.target.value;
+            if (password.length === 0) {
+                strengthText.textContent = 'Please enter a password.';
+                strengthIndicator.className = 'strength-indicator';
+                animateCrackTime('', '');
+            } else if (password.length > 18) {
+                strengthText.textContent = 'Password too long!';
+                strengthIndicator.className = 'strength-indicator strength-very-strong';
+                animateCrackTime("Sorry! Password exceeds character limit(>18)", "crack-fast");
+            } else {
+                updateStrength(password);
+            }
+        });
+    </script>
+</body>
+</html>
